@@ -6,6 +6,7 @@ import MaterialForm from './components/MaterialForm';
 import ClientList from './components/ClientList';
 import MaterialList from './components/MaterialList';
 import UserManagement from './components/UserManagement';
+import QuoteCard from './components/QuoteCard';
 import { 
   Plus, Search, FileText, Users, Package, 
   Download, Edit2, Trash2, LayoutDashboard,
@@ -577,12 +578,35 @@ export default function App() {
                 </div>
 
                 {/* Recent Quotes */}
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                  <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+                <div className="bg-transparent md:bg-white md:rounded-xl md:shadow-sm md:border border-slate-200 overflow-hidden">
+                  <div className="p-6 bg-white rounded-xl md:rounded-none border border-slate-200 md:border-none md:border-b border-slate-100 flex justify-between items-center mb-4 md:mb-0">
                     <h3 className="font-bold text-slate-800 text-lg">Preventivi Recenti</h3>
                     <button onClick={() => setView('quotes')} className="text-blue-600 text-sm font-medium hover:underline">Vedi tutti</button>
                   </div>
-                  <div className="overflow-x-auto">
+                  
+                  {/* Mobile View */}
+                  <div className="md:hidden space-y-4">
+                    {filteredQuotes.slice(0, 5).map((q) => (
+                      <QuoteCard 
+                        key={q.id} 
+                        quote={q} 
+                        companySettings={companySettings}
+                        onEdit={(quote) => {
+                          setEditingQuote(quote);
+                          setShowQuoteForm(true);
+                        }}
+                        onDownload={(quote) => generateQuotePDF(quote, companySettings)}
+                      />
+                    ))}
+                    {filteredQuotes.length === 0 && (
+                      <div className="py-12 text-center text-slate-400 bg-white rounded-xl border border-slate-200">
+                        Nessun preventivo trovato.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Desktop View */}
+                  <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-left">
                       <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
                         <tr>
@@ -639,11 +663,35 @@ export default function App() {
               </motion.div>
             ) : view === 'quotes' ? (
               <motion.div key="quotes" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                  <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+                <div className="bg-transparent md:bg-white md:rounded-xl md:shadow-sm md:border border-slate-200 overflow-hidden">
+                  <div className="p-6 bg-white rounded-xl md:rounded-none border border-slate-200 md:border-none md:border-b border-slate-100 flex justify-between items-center mb-4 md:mb-0">
                     <h3 className="font-bold text-slate-800 text-lg">Tutti i Preventivi</h3>
                   </div>
-                  <div className="overflow-x-auto">
+
+                  {/* Mobile View */}
+                  <div className="md:hidden space-y-4">
+                    {filteredQuotes.map((q) => (
+                      <QuoteCard 
+                        key={q.id} 
+                        quote={q} 
+                        companySettings={companySettings}
+                        onEdit={(quote) => {
+                          setEditingQuote(quote);
+                          setShowQuoteForm(true);
+                        }}
+                        onDownload={(quote) => generateQuotePDF(quote, companySettings)}
+                        onDelete={(id) => handleDelete('quotes', id)}
+                      />
+                    ))}
+                    {filteredQuotes.length === 0 && (
+                      <div className="py-12 text-center text-slate-400 bg-white rounded-xl border border-slate-200">
+                        Nessun preventivo trovato.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Desktop View */}
+                  <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-left">
                       <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
                         <tr>
