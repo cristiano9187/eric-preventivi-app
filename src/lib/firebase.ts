@@ -2,16 +2,13 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, orderBy, getDocFromServer, setDoc } from 'firebase/firestore';
 
-// Import the Firebase configuration as a fallback
-import firebaseConfigJson from '../../firebase-applet-config.json';
-
-// Use environment variables if available, otherwise fallback to JSON config
+// Configuration Firebase
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_APP_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY || firebaseConfigJson.apiKey,
-  authDomain: import.meta.env.VITE_APP_FIREBASE_AUTH_DOMAIN || import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseConfigJson.authDomain,
-  projectId: import.meta.env.VITE_APP_FIREBASE_PROJECT_ID || import.meta.env.VITE_FIREBASE_PROJECT_ID || firebaseConfigJson.projectId,
-  appId: import.meta.env.VITE_APP_FIREBASE_APP_ID || import.meta.env.VITE_FIREBASE_APP_ID || firebaseConfigJson.appId,
-  firestoreDatabaseId: import.meta.env.VITE_APP_FIREBASE_DATABASE_ID || import.meta.env.VITE_FIREBASE_DATABASE_ID || firebaseConfigJson.firestoreDatabaseId || '(default)',
+  apiKey: import.meta.env.VITE_APP_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY || "",
+  authDomain: import.meta.env.VITE_APP_FIREBASE_AUTH_DOMAIN || import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
+  projectId: import.meta.env.VITE_APP_FIREBASE_PROJECT_ID || import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
+  appId: import.meta.env.VITE_APP_FIREBASE_APP_ID || import.meta.env.VITE_FIREBASE_APP_ID || "",
+  firestoreDatabaseId: import.meta.env.VITE_APP_FIREBASE_DATABASE_ID || import.meta.env.VITE_FIREBASE_DATABASE_ID || "(default)",
 };
 
 // Initialize Firebase SDK
