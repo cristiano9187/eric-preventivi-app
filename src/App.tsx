@@ -37,6 +37,7 @@ export default function App() {
   const [view, setView] = useState<View>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [logo, setLogo] = useState<string | null>(null);
+  const [isGeneratingLogo, setIsGeneratingLogo] = useState(false);
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [appUsers, setAppUsers] = useState<AppUser[]>([]);
@@ -820,17 +821,34 @@ export default function App() {
                           Il logo viene generato automaticamente tramite AI. Puoi rigenerarlo se desideri uno stile diverso.
                         </p>
                         <button 
+                          disabled={isGeneratingLogo}
                           onClick={async () => {
-                            const generated = await generatePlumbingLogo();
-                            if (generated) {
-                              const compressed = await compressImage(generated);
-                              setLogo(compressed);
-                              localStorage.setItem('plumbing_logo', compressed);
+                            setIsGeneratingLogo(true);
+                            setToast({ message: 'Generazione logo in corso...', type: 'success' });
+                            try {
+                              const generated = await generatePlumbingLogo();
+                              if (generated) {
+                                const compressed = await compressImage(generated);
+                                setLogo(compressed);
+                                localStorage.setItem('plumbing_logo', compressed);
+                                setToast({ message: 'Logo rigenerato con successo!', type: 'success' });
+                              } else {
+                                setToast({ message: 'Errore nella generazione del logo. Verifica la tua API Key.', type: 'error' });
+                              }
+                            } catch (err) {
+                              console.error('Logo generation error:', err);
+                              setToast({ message: 'Errore durante la generazione del logo.', type: 'error' });
+                            } finally {
+                              setIsGeneratingLogo(false);
                             }
                           }}
-                          className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
+                          className={cn(
+                            "flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors",
+                            isGeneratingLogo && "opacity-50 cursor-not-allowed"
+                          )}
                         >
-                          <RefreshCw size={18} /> Rigenera Logo
+                          <RefreshCw size={18} className={cn(isGeneratingLogo && "animate-spin")} /> 
+                          {isGeneratingLogo ? 'Generazione...' : 'Rigenera Logo'}
                         </button>
                       </div>
                     </div>
