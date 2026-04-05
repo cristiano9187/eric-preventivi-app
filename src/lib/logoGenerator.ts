@@ -12,7 +12,7 @@ export async function generatePlumbingLogo() {
     contents: {
       parts: [
         {
-          text: 'A professional and modern logo for a plumbing business named "Eric Soluzioni Idraulici". The logo should feature a stylized wrench and a water drop in a minimalist, clean design. Colors: Professional deep blue and silver. White background. High resolution, vector style.',
+          text: 'A professional and modern logo for a plumbing business named "azienda termoidraulica di eric". The logo should feature a stylized wrench and a water drop in a minimalist, clean design. Colors: Professional deep blue and silver. White background. High resolution, vector style.',
         },
       ],
     },
