@@ -1,0 +1,74 @@
+{
+  "entities": {
+    "Client": {
+      "title": "Client",
+      "description": "Information about a customer",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "ownerId": { "type": "string", "description": "UID of the plumber who owns this client record" }
+      },
+      "required": ["id", "name", "phone", "ownerId"]
+    },
+    "Material": {
+      "title": "Material",
+      "description": "Item or service that can be added to a quote",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "unitPrice": { "type": "number" },
+        "category": { "type": "string" },
+        "ownerId": { "type": "string" }
+      },
+      "required": ["id", "name", "unitPrice", "ownerId"]
+    },
+    "Quote": {
+      "title": "Quote",
+      "description": "A financial quote or invoice",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "quoteNumber": { "type": "string" },
+        "clientId": { "type": "string" },
+        "clientName": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "validUntil": { "type": "string", "format": "date" },
+        "items": { 
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "payments": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "status": { "type": "string", "enum": ["draft", "sent", "accepted", "cancelled", "paid"] },
+        "notes": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "totalTax": { "type": "number" },
+        "grandTotal": { "type": "number" },
+        "ownerId": { "type": "string" }
+      },
+      "required": ["id", "quoteNumber", "clientId", "ownerId", "grandTotal"]
+    }
+  },
+  "firestore": {
+    "/clients/{clientId}": {
+      "schema": "Client",
+      "description": "Collection of clients"
+    },
+    "/materials/{materialId}": {
+      "schema": "Material",
+      "description": "Collection of materials and services"
+    },
+    "/quotes/{quoteId}": {
+      "schema": "Quote",
+      "description": "Collection of quotes"
+    }
+  }
+}

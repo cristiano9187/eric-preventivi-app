@@ -1,0 +1,145 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: clients
+    // Fields: id, name, email, phone, address, createdAt, ownerId
+    //
+    // Collection: materials
+    // Fields: id, name, unitPrice, category, ownerId
+    //
+    // Collection: quotes
+    // Fields: id, quoteNumber, clientId, clientName, date, validUntil, items, payments, status, notes, totalAmount, totalTax, grandTotal, ownerId
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAllowedEmail() {
+      return isAuthenticated() && 
+             request.auth.token.email_verified == true &&
+             (request.auth.token.email == 'christian.yamepi@gmail.com' ||
+              request.auth.token.email == 'eric.bopda99@gmail.com' ||
+              exists(/databases/$(database)/documents/users/$(request.auth.token.email)));
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+             request.auth.token.email_verified == true &&
+             (request.auth.token.email == 'christian.yamepi@gmail.com' ||
+              request.auth.token.email == 'eric.bopda99@gmail.com' ||
+              get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.role == 'admin');
+    }
+
+    function isOwner(ownerId) {
+      return isAllowedEmail() && request.auth.uid == ownerId;
+    }
+
+    function isDocOwner() {
+      return isAllowedEmail() && request.auth.uid == resource.data.ownerId;
+    }
+
+    function uidUnchanged() {
+      return request.resource.data.ownerId == request.auth.uid;
+    }
+
+    function ownerNotModified() {
+      return request.resource.data.ownerId == resource.data.ownerId;
+    }
+
+    function isValidString(val, min, max) {
+      return val is string && val.size() >= min && val.size() <= max;
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidClient(data) {
+      return data.keys().hasAll(['id', 'name', 'phone', 'ownerId']) &&
+             isValidString(data.name, 1, 100) &&
+             isValidString(data.phone, 5, 20) &&
+             (data.keys().hasOnly(['id', 'name', 'phone', 'ownerId', 'email', 'address', 'createdAt']));
+    }
+
+    function isValidMaterial(data) {
+      return data.keys().hasAll(['id', 'name', 'unitPrice', 'ownerId']) &&
+             isValidString(data.name, 1, 100) &&
+             data.unitPrice is number && data.unitPrice >= 0 &&
+             (data.keys().hasOnly(['id', 'name', 'unitPrice', 'ownerId', 'category']));
+    }
+
+    function isValidQuote(data) {
+      return data.keys().hasAll(['id', 'quoteNumber', 'clientId', 'ownerId', 'grandTotal']) &&
+             isValidString(data.quoteNumber, 1, 50) &&
+             data.grandTotal is number && data.grandTotal >= 0 &&
+             data.status in ['draft', 'sent', 'accepted', 'cancelled', 'paid'] &&
+             (data.keys().hasOnly(['id', 'quoteNumber', 'clientId', 'clientName', 'date', 'validUntil', 'items', 'payments', 'status', 'notes', 'workDescription', 'totalAmount', 'totalTax', 'grandTotal', 'ownerId']));
+    }
+
+    function isValidAppUser(data) {
+      return data.keys().hasAll(['id', 'name', 'email', 'role', 'createdAt']) &&
+             isValidString(data.name, 1, 100) &&
+             isValidString(data.email, 5, 100) &&
+             data.role in ['admin', 'user'] &&
+             (data.keys().hasOnly(['id', 'name', 'email', 'role', 'createdAt']));
+    }
+
+    function isValidCompanySettings(data) {
+      return data.keys().hasAll(['id', 'companyName', 'vatNumber', 'address']) &&
+             isValidString(data.companyName, 1, 100) &&
+             isValidString(data.vatNumber, 1, 50) &&
+             isValidString(data.address, 1, 200) &&
+             (data.keys().hasOnly(['id', 'companyName', 'vatNumber', 'address', 'logo']));
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /settings/{settingId} {
+      allow read: if isAllowedEmail();
+      allow write: if isAllowedEmail() && isValidCompanySettings(request.resource.data);
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin() && isValidAppUser(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /clients/{clientId} {
+      allow read: if isAllowedEmail();
+      allow create: if isAllowedEmail() && isValidClient(request.resource.data) && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isAllowedEmail() && isValidClient(request.resource.data) && ownerNotModified();
+      allow delete: if isAllowedEmail();
+    }
+
+    match /materials/{materialId} {
+      allow read: if isAllowedEmail();
+      allow create: if isAllowedEmail() && isValidMaterial(request.resource.data) && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isAllowedEmail() && isValidMaterial(request.resource.data) && ownerNotModified();
+      allow delete: if isAllowedEmail();
+    }
+
+    match /quotes/{quoteId} {
+      allow read: if isAllowedEmail();
+      allow create: if isAllowedEmail() && isValidQuote(request.resource.data) && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isAllowedEmail() && isValidQuote(request.resource.data) && ownerNotModified();
+      allow delete: if isAllowedEmail();
+    }
+
+    match /test/connection {
+      allow read: if isAllowedEmail();
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "name": "Plombier Pro - Gestion de Devis",
+  "description": "Application de gestion de devis et facturation pour plombiers, avec stockage sécurisé et génération de PDF.",
+  "requestFramePermissions": []
+}
